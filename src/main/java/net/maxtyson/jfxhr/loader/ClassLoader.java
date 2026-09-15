@@ -1,5 +1,6 @@
 package net.maxtyson.jfxhr.loader;
 
+import net.maxtyson.jfxhr.Reloadable;
 import sun.reflect.ReflectionFactory;
 
 import java.io.File;
@@ -51,6 +52,10 @@ public class ClassLoader {
         Class<?> oldClass = oldInstance.getClass();
         Class<?> current = sourceClass;
 
+        // Let the instance perform any local preloads
+        if (newInstance instanceof Reloadable)
+            ((Reloadable)newInstance).beforeReload();
+
         // Inject old state into object
         while (current != null && sharesTopLevel(current.getName(), oldClass.getPackageName())) {
             for (Field newField : current.getDeclaredFields()) {
@@ -75,6 +80,10 @@ public class ClassLoader {
             // Ensure superclasses are inited aswell
             current = current.getSuperclass();
         }
+
+        // Let the instance perform any local reloads
+        if (newInstance instanceof Reloadable)
+            ((Reloadable)newInstance).afterReload();
 
         return newInstance;
     }

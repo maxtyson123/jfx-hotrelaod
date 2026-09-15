@@ -5,6 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.layout.Pane;
+import net.maxtyson.jfxhr.Reloadable;
 import net.maxtyson.jfxhr.loader.ClassLoader;
 import net.maxtyson.jfxhr.watcher.SourceWatcher;
 
@@ -38,6 +39,10 @@ public class FXSwapper {
     }
 
     private void moveChildren(Node oldInstance, Node newInstance) throws Exception {
+
+        // Let the instance perform any local cleanups
+        if (oldInstance instanceof Reloadable)
+            ((Reloadable)oldInstance).onUnload();
 
         // Wasn't a parent
         if (!(newInstance instanceof Parent newParent) || !(oldInstance instanceof Parent oldParent))

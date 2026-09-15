@@ -1,5 +1,6 @@
 package net.maxtyson.jfxhr.compiler;
 
+
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 import java.nio.file.Path;
