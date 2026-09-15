@@ -29,7 +29,7 @@ public class DynamicCompiler {
         }
     }
 
-    public CompileResult compile(Path sourceFile, Path outputDir) {
+    public CompileResult compile(Path sourceFile,  Path sourceDir, Path outputDir) {
 
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
         log.info("Compiling '{}' into '{}'", sourceFile, outputDir);
@@ -48,6 +48,7 @@ public class DynamicCompiler {
         // Load the compilation config on the compiler
         List<String> options = List.of(
             "-classpath", classpath,
+            "-sourcepath", sourceDir.toString(),
             "-d", outPath
         );
         JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnostics, options, null, compilationUnits);

@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
+import java.util.List;
 
 public class HotReloader {
 
@@ -20,23 +21,24 @@ public class HotReloader {
     private static final Logger log = LogManager.getLogger(HotReloader.class);
 
     private final ReloaderConfig config;
-    private final Pane mountPoint;
 
     private final SourceWatcher watcher;
+    private final FXSwapper swapper;
     private final DynamicCompiler compiler = new DynamicCompiler();
 
-    public HotReloader(ReloaderConfig config, Pane mountPoint) {
+    public HotReloader(ReloaderConfig config, Pane root) {
 
         // Construct
         this.config = config;
-        this.mountPoint = mountPoint;
+        swapper = new FXSwapper(root);
 
         // First load
-        onSourceChanged(Path.of("watched-test/net/maxtyson/jfxhr/demo/DemoButton.java"));
+        loadDemo();
 
         // Listen for source code changes
         watcher = new SourceWatcher(config.watchDir(), p -> this.onSourceChanged(p));
         watcher.start();
+
     }
 
     public static HotReloader attach(ReloaderConfig config, Pane mountPoint) {
@@ -44,41 +46,44 @@ public class HotReloader {
         return new HotReloader(config, mountPoint);
     }
 
-    private void onSourceChanged(Path sourceFile) {
+    private Class<?> onSourceChanged(Path sourceFile) {
         log.info("Hot reloading file: '{}'", sourceFile);
 
         // Compile
-        CompileResult compiled = compiler.compile(sourceFile, config.binDir());
+        CompileResult compiled = compiler.compile(sourceFile, config.watchDir(), config.binDir());
+        String fqn = ClassLoader.fullQualifiedNameFromPath(sourceFile.subpath(1, sourceFile.getNameCount()));
+        System.out.println(fqn);
 
         // Compilation failed
         if(!compiled.success()){
             log.error("Failed to compile '{}' - {}", sourceFile, compiled.diagnostics());
-            return;
+            return null;
         }
 
-        // Load
-        Class<?> loaded;
         try {
-            loaded = ClassLoader.load(compiled.outputDir(), config.rootClassName());
+
+            // Load into instantiateable object
+            Class<?> loadedClass = ClassLoader.load(compiled.outputDir(), fqn);
+            swapper.swapAll(fqn, loadedClass);
+
+            return loadedClass;
+
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("Failed to load '{}' - {}", config.rootClassName(), e.getMessage());
-            return;
+            log.error("Failed to load '{}' - {}", fqn, e.getMessage());
+            return null;
         }
+    }
 
-        // Construct a new instance
+    private void loadDemo() {
+
+        Class<?> rootClass = onSourceChanged(Path.of("watched-test/net/maxtyson/jfxhr/demo/DemoScene.java"));
+
         try{
-            Object instance = loaded.getDeclaredConstructor().newInstance();
-            FXSwapper.swap(mountPoint, (Node) instance);
-
-        } catch (InvocationTargetException | InstantiationException | IllegalAccessException | NoSuchMethodException e ) {
-            e.printStackTrace();
-            log.error("Failed to construct '{}' - {}", config.rootClassName(), e.getMessage());
-            return;
+            swapper.setInRoot((Node)rootClass.getDeclaredConstructor().newInstance());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
-        // reflective newInstance
-        // UiSwapper.swap
     }
 
 }

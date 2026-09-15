@@ -17,13 +17,8 @@ public class App extends Application {
         ReloaderConfig config = new ReloaderConfig(
             stage,
             Path.of("watched-test"),
-            Path.of("target/classes-jfxhr"),
-
-            "net.maxtyson.jfxhr.demo.DemoButton",
-            new Class<?>[]{},
-            new Object[]{}
+            Path.of("target/classes-jfxhr")
         );
-
 
         StackPane root = new StackPane();
         stage.setScene(new Scene(root, 400, 300));
