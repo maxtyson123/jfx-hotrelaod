@@ -54,10 +54,11 @@ public class ClassLoader {
             ((Reloadable) targetInstance).beforeReload();
 
         // Get the that were used to construct the new and old element
-        Object[] oldArgs = internalReadArgsTypes(oldInstance);
-        Object[] newArgs = internalReadArgsTypes(targetInstance);
+        Object[] oldArgsTypes = internalReadArgsTypes(oldInstance);
+        Object[] oldArgValues = internalReadArgs(oldInstance);
+        Object[] newArgsTypes = internalReadArgsTypes(targetInstance);
 
-        boolean argsChanged = oldArgs != null && newArgs != null && !Arrays.equals(oldArgs, newArgs);
+        boolean argsChanged = oldArgsTypes != null && newArgsTypes != null && !Arrays.equals(oldArgsTypes, newArgsTypes);
 
         // Inject old state into object
         while (current != null && sharesSourcePacakage(current.getName(), oldClass.getPackageName())) {
@@ -84,7 +85,7 @@ public class ClassLoader {
                 Object newValue = newField.get(targetInstance);
 
                 // If the args were updated then don't copy the old arg over
-                if (argsChanged && isArgValue(oldValue, oldArgs))
+                if (argsChanged && isArgValue(oldValue, oldArgValues))
                     continue;
 
                 // Any field that is uninitialised will be set up during construction, so don't copy the old constructed values

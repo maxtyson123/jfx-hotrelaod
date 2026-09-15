@@ -29,7 +29,7 @@ public class SourceWatcher {
 
     private Consumer<Path> onFileChanged;
     private PauseTransition debouncer;
-    private Path changeEvent;
+    private Set<Path> changeEvents;
 
     private Path watchDirectory;
     private WatchService watcher;
@@ -45,7 +45,15 @@ public class SourceWatcher {
 
         // Ensure files arent compiled mid write to disk
         debouncer = new PauseTransition(Duration.millis(300));
-        debouncer.setOnFinished(e -> onFileChanged.accept(changeEvent));
+        debouncer.setOnFinished(e -> {
+
+            // Recompile all the changed files
+            for(Path changeEvent : changeEvents)
+                onFileChanged.accept(changeEvent);
+
+            // Wait for future files
+            changeEvents.clear();
+        });
 
     }
 
@@ -113,7 +121,7 @@ public class SourceWatcher {
 
                         // Pass event to reloader pipeline
                         if(!isDirectory){
-                            changeEvent = file;
+                            changeEvents.add(file);
                             debouncer.playFromStart();
                         }
 

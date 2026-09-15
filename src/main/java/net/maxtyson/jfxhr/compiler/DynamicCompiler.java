@@ -63,7 +63,8 @@ public class DynamicCompiler {
 
         // Compile the class
         boolean success = task.call();
-        injectInternalCode(outputDir, fqn);
+        if(success)
+            injectInternalCode(outputDir, fqn);
 
         fileManager.close();
         return new CompileResult(success, outputDir, diagnostics.getDiagnostics());
