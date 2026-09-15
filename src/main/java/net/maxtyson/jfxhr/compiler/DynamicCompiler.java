@@ -29,10 +29,10 @@ public class DynamicCompiler {
         }
     }
 
-    public CompileResult compile(Path sourceRoot, Path outputDir) {
+    public CompileResult compile(Path sourceFile, Path outputDir) {
 
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
-
+        log.info("Compiling '{}' into '{}'", sourceFile, outputDir);
 
         // Cant compile without a compiler
         if(compiler == null)
@@ -43,7 +43,7 @@ public class DynamicCompiler {
         String outPath = outputDir.toAbsolutePath().toString();
 
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
-        Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjects(sourceRoot);
+        Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjects(sourceFile);
 
         // Load the compilation config on the compiler
         List<String> options = List.of(

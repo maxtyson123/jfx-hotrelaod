@@ -17,8 +17,9 @@ public class App extends Application {
         ReloaderConfig config = new ReloaderConfig(
             stage,
             Path.of("watched-test"),
+            Path.of("target/classes-jfxhr"),
 
-            "net.maxtyson.jfxhr.demo.DemoView",
+            "net.maxtyson.jfxhr.demo.DemoButton",
             new Class<?>[]{},
             new Object[]{}
         );
