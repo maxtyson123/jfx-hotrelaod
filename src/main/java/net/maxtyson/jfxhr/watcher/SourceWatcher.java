@@ -2,6 +2,7 @@ package net.maxtyson.jfxhr.watcher;
 
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
+import net.maxtyson.jfxhr.loader.ClassLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -9,7 +10,9 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -32,6 +35,7 @@ public class SourceWatcher {
     private ExecutorService watchingThread;
     private final Map<WatchKey, Path> subDirectories = new HashMap<>();
 
+    private Set<String> watchedClasses = new HashSet<>();
 
     public SourceWatcher(Path dir, Consumer<Path> onFileChanged) {
 
@@ -55,6 +59,10 @@ public class SourceWatcher {
                 // Add the directory to the list of directories to watch
                 WatchKey key = dir.register(watcher, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
                 subDirectories.put(key, dir);
+
+                // If it's not the start (src) dir then it counts as a package name
+                if(!dir.toString().equals(start.toString()))
+                    watchedClasses.add(ClassLoader.fullQualifiedNameFromDir(dir.subpath(1, dir.getNameCount())));
 
                 return FileVisitResult.CONTINUE;
             }
@@ -117,6 +125,7 @@ public class SourceWatcher {
 
                     // Directory must have been deleted so stop watching it
                     subDirectories.remove(key);
+//                    watchedClasses.remove(ClassLoader.fullQualifiedNameFromDir()) @TODO
 
                     // Nothing left to watch
                     if (subDirectories.isEmpty())
@@ -141,5 +150,9 @@ public class SourceWatcher {
 
     public void stop() {
 
+    }
+
+    public Set<String> getWatchedClasses() {
+        return watchedClasses;
     }
 }

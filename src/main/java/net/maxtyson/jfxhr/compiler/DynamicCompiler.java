@@ -49,6 +49,7 @@ public class DynamicCompiler {
         List<String> options = List.of(
             "-classpath", classpath,
             "-sourcepath", sourceDir.toString(),
+            "-parameters",
             "-d", outPath
         );
         JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnostics, options, null, compilationUnits);

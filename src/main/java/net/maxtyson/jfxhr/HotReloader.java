@@ -28,16 +28,16 @@ public class HotReloader {
 
     public HotReloader(ReloaderConfig config, Pane root) {
 
-        // Construct
-        this.config = config;
-        swapper = new FXSwapper(root);
-
-        // First load
-        loadDemo();
-
         // Listen for source code changes
         watcher = new SourceWatcher(config.watchDir(), p -> this.onSourceChanged(p));
         watcher.start();
+
+        // Construct
+        this.config = config;
+        swapper = new FXSwapper(root, watcher);
+
+        // First load
+        loadDemo();
 
     }
 
@@ -51,8 +51,7 @@ public class HotReloader {
 
         // Compile
         CompileResult compiled = compiler.compile(sourceFile, config.watchDir(), config.binDir());
-        String fqn = ClassLoader.fullQualifiedNameFromPath(sourceFile.subpath(1, sourceFile.getNameCount()));
-        System.out.println(fqn);
+        String fqn = ClassLoader.fullQualifiedNameFromFile(sourceFile.subpath(1, sourceFile.getNameCount()));
 
         // Compilation failed
         if(!compiled.success()){
