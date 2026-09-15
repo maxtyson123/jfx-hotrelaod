@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 import static java.nio.file.StandardWatchEventKinds.*;
 
@@ -22,8 +23,9 @@ public class SourceWatcher {
     /// SourceWatcher specific logger
     private static final Logger log = LogManager.getLogger(SourceWatcher.class);
 
-    private Runnable onChangeDebounced;
+    private Consumer<Path> onFileChanged;
     private PauseTransition debouncer;
+    private Path changeEvent;
 
     private Path watchDirectory;
     private WatchService watcher;
@@ -31,14 +33,14 @@ public class SourceWatcher {
     private final Map<WatchKey, Path> subDirectories = new HashMap<>();
 
 
-    public SourceWatcher(Path dir, Runnable onChangeDebounced) {
+    public SourceWatcher(Path dir, Consumer<Path> onFileChanged) {
 
         this.watchDirectory = dir;
-        this.onChangeDebounced = onChangeDebounced;
+        this.onFileChanged = onFileChanged;
 
         // Ensure files arent compiled mid write to disk
         debouncer = new PauseTransition(Duration.millis(300));
-        debouncer.setOnFinished(e -> onChangeDebounced.run());
+        debouncer.setOnFinished(e -> onFileChanged.accept(changeEvent));
 
     }
 
@@ -99,6 +101,12 @@ public class SourceWatcher {
                         if (event.kind() == ENTRY_CREATE)
                             if (isDirectory)
                                 watchDirectoryContents(file);
+
+                        // Pass event to reloader pipeline
+                        if(!isDirectory){
+                            changeEvent = file;
+                            debouncer.playFromStart();
+                        }
 
                         log.info("Event {} on {} '{}'", fileEvent.kind().name(),  isDirectory ? "directory" : "file", fileEvent.context());
                     }
