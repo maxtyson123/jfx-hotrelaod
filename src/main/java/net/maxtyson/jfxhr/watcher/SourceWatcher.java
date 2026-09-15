@@ -7,6 +7,9 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,66 +19,119 @@ import static java.nio.file.StandardWatchEventKinds.*;
 public class SourceWatcher {
 
 
-   /// SourceWatcher specific logger
-   private static final Logger log = LogManager.getLogger(SourceWatcher.class);
+    /// SourceWatcher specific logger
+    private static final Logger log = LogManager.getLogger(SourceWatcher.class);
 
-   private Path watchDirectory;
-   private Runnable onChangeDebounced;
+    private Runnable onChangeDebounced;
+    private PauseTransition debouncer;
 
-   private PauseTransition debouncer;
-   private ExecutorService watchingThread;
+    private Path watchDirectory;
+    private WatchService watcher;
+    private ExecutorService watchingThread;
+    private final Map<WatchKey, Path> subDirectories = new HashMap<>();
 
 
-   public SourceWatcher(Path dir, Runnable onChangeDebounced) {
+    public SourceWatcher(Path dir, Runnable onChangeDebounced) {
 
-      this.watchDirectory = dir;
-      this.onChangeDebounced = onChangeDebounced;
+        this.watchDirectory = dir;
+        this.onChangeDebounced = onChangeDebounced;
 
-      // Ensure files arent compiled mid write to disk
-      debouncer = new PauseTransition(Duration.millis(300));
-      debouncer.setOnFinished(e -> onChangeDebounced.run());
+        // Ensure files arent compiled mid write to disk
+        debouncer = new PauseTransition(Duration.millis(300));
+        debouncer.setOnFinished(e -> onChangeDebounced.run());
 
-   }
+    }
 
-   public void start() {
+     private void watchDirectoryContents(Path start) throws IOException {
 
-      // Start a new thread to handle watching
-      watchingThread = Executors.newSingleThreadExecutor();
-      watchingThread.submit(() ->{
+        Files.walkFileTree(start, new SimpleFileVisitor<Path>() {
+
+
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+
+                // Add the directory to the list of directories to watch
+                WatchKey key = dir.register(watcher, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
+                subDirectories.put(key, dir);
+
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }
+
+    private void spinUpWatchers() {
+
+         watchingThread = Executors.newSingleThreadExecutor();
+         watchingThread.submit(() -> {
 
             log.info("Started watching '{}' on tid {}", watchDirectory, Thread.currentThread().getName());
 
-            try (WatchService watcher = FileSystems.getDefault().newWatchService()) {
-                watchDirectory.register(watcher, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
+            try {
+
+                watcher = FileSystems.getDefault().newWatchService();
+                watchDirectoryContents(watchDirectory);
 
                 while (!Thread.currentThread().isInterrupted()) {
 
                     // Wait for directory events
                     WatchKey key = watcher.take();
+
+                    // Look up the actual directory this event was watched for on
+                    Path directory = subDirectories.get(key);
+                    if (directory == null) {
+                        System.err.println("WatchKey not recognized!");
+                        continue;
+                    }
+
                     for (WatchEvent<?> event : key.pollEvents()) {
 
                         // Skip malformed event
                         if (event.kind() == OVERFLOW)
-                           continue;
+                            continue;
 
+                        // Parse event
                         WatchEvent<Path> fileEvent = (WatchEvent<Path>) event;
-                        log.info("Event {} on file {}", fileEvent.kind().name(), fileEvent.context());
+                        Path filename = fileEvent.context();
+                        Path file = directory.resolve(filename);
+                        boolean isDirectory = Files.isDirectory(file);
+
+                        // Add any new directories to the directories to watch
+                        if (event.kind() == ENTRY_CREATE)
+                            if (isDirectory)
+                                watchDirectoryContents(file);
+
+                        log.info("Event {} on {} '{}'", fileEvent.kind().name(),  isDirectory ? "directory" : "file", fileEvent.context());
                     }
 
                     // Signal that event has been handled and wait for next if safe to continue polling
-                    if (!key.reset())
-                       break;
+                    if (key.reset())
+                        continue;
+
+                    // Directory must have been deleted so stop watching it
+                    subDirectories.remove(key);
+
+                    // Nothing left to watch
+                    if (subDirectories.isEmpty())
+                        break;
                 }
 
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (InterruptedException e) {
-                log.info("Log thread safley stopped");
+                log.info("Log thread safely stopped");
             }
-      });
-   }
+        });
 
-   public void stop() {
+    }
 
-   }
+    public void start() {
+
+        // Start a new thread to handle watching
+        spinUpWatchers();
+    }
+
+
+    public void stop() {
+
+    }
 }
