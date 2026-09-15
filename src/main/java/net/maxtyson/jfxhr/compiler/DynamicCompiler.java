@@ -6,6 +6,6 @@ public class DynamicCompiler {
 
     public CompileResult compile(Path sourceRoot, Path outputDir) {
 
-
+        return null;
     }
 }
