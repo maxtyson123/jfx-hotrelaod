@@ -18,9 +18,10 @@ public class IconButton extends StackPane implements Reloadable {
     }
 
     private void updateLabel(String name) {
-        label.setText(name + " - " + clicks);
+        label.setText(name + " : " + clicks);
         getChildren().setAll(label);
     }
+
 
     @Override
     public void afterReload() {

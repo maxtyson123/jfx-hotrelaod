@@ -20,6 +20,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 import static java.nio.file.StandardWatchEventKinds.*;
+import static net.maxtyson.jfxhr.compiler.FullyQualifiedName.getFQNPart;
 
 public class SourceWatcher {
 
@@ -29,7 +30,7 @@ public class SourceWatcher {
 
     private Consumer<Path> onFileChanged;
     private PauseTransition debouncer;
-    private Set<Path> changeEvents;
+    private Set<Path> changeEvents = new HashSet<>();
 
     private Path watchDirectory;
     private WatchService watcher;
@@ -71,7 +72,7 @@ public class SourceWatcher {
 
                 // If it's not the start (src) dir then it counts as a package name
                 if(!dir.toString().equals(start.toString()))
-                    watchedClasses.add(FullyQualifiedName.fromDirectory(dir.subpath(1, dir.getNameCount())));
+                    watchedClasses.add(FullyQualifiedName.fromDirectory(getFQNPart(start, dir)));
 
                 return FileVisitResult.CONTINUE;
             }

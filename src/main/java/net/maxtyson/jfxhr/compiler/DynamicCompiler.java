@@ -12,8 +12,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.tools.*;
+import java.io.File;
 import java.io.IOException;
+import java.lang.module.ModuleFinder;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -24,7 +27,7 @@ public class DynamicCompiler {
 
     private JavaCompiler compiler;
 
-    public DynamicCompiler(){
+    public DynamicCompiler() {
 
         // Instantiate a copy of the java compiler
         compiler = ToolProvider.getSystemJavaCompiler();
@@ -42,28 +45,42 @@ public class DynamicCompiler {
         log.info("Compiling '{}' into '{}'", sourceFile, outputDir);
 
         // Cant compile without a compiler
-        if(compiler == null)
+        if (compiler == null)
             return new CompileResult(false, null, diagnostics.getDiagnostics());
 
         // Fetch compiler options
         String classpath = System.getProperty("java.class.path");
+        String modulePath = System.getProperty("jdk.module.path");
         String outPath = outputDir.toAbsolutePath().toString();
 
         StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
         Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjects(sourceFile);
 
         // Load the compilation config on the compiler
-        List<String> options = List.of(
-            "-classpath", classpath,
-            "-sourcepath", sourceDir.toString(),
-            "-parameters",
-            "-d", outPath
-        );
-        JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnostics, options, null, compilationUnits);
+        List<String> options =  new ArrayList<>(List.of(
+                "-classpath", classpath,
+                "-sourcepath", sourceDir.toString(),
+                "-parameters",
+                "-d", outPath
+        ));
+
+
+        // JavaFX may be modulated rather then directly on the class path in subprojects
+        if (modulePath != null && !modulePath.isBlank()) {
+        log.info("Module path entries: {}", Arrays.toString(modulePath.split(File.pathSeparator)));
+
+            options.add("-p");
+            options.add(modulePath);
+            options.add("--add-modules");
+            options.add(parseModules(modulePath));
+        }
 
         // Compile the class
+        JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnostics, options, null, compilationUnits);
         boolean success = task.call();
-        if(success)
+
+        // Need to add extra metadata for parseing
+        if (success)
             injectInternalCode(outputDir, fqn);
 
         fileManager.close();
@@ -84,11 +101,23 @@ public class DynamicCompiler {
 
         // Inject bytecode containing metadata needed to help scene injection
         new ByteBuddy()
-            .redefine(type, compoundLocator)
-            .defineField("__jfxhr_args", Object[].class, Visibility.PUBLIC)
-            .defineField("__jfxhr_args_types", Object[].class, Visibility.PUBLIC)
-            .visit(Advice.to(ConstructorArgsObserver.class).on(ElementMatchers.isConstructor()))
-            .make()
-            .saveIn(outputDir.toFile());
+                .redefine(type, compoundLocator)
+                .defineField("__jfxhr_args", Object[].class, Visibility.PUBLIC)
+                .defineField("__jfxhr_args_types", Object[].class, Visibility.PUBLIC)
+                .visit(Advice.to(ConstructorArgsObserver.class).on(ElementMatchers.isConstructor()))
+                .make()
+                .saveIn(outputDir.toFile());
+    }
+
+    private String parseModules(String modulePath) {
+        List<String> names = new ArrayList<>();
+
+        for (String entry : modulePath.split(File.pathSeparator)) {
+            Path jar = Path.of(entry);
+            ModuleFinder.of(jar).findAll().forEach(m -> names.add(m.descriptor().name()));
+        }
+
+        return String.join(",", names);
+
     }
 }

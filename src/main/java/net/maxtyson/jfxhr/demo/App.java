@@ -24,7 +24,8 @@ public class App extends Application {
         stage.setScene(new Scene(root, 400, 300));
         stage.show();
 
-        HotReloader.attach(config, root);
+        HotReloader reloader = HotReloader.attach(config, root);
+        reloader.loadDemo();
     }
 
     public static void main(String[] args) {

@@ -13,7 +13,6 @@ public class FullyQualifiedName {
     }
 
 
-
     public static String fromDirectory(Path dir) {
 
         String fqnPackage = dir.toString().replace("/", ".");
@@ -22,6 +21,11 @@ public class FullyQualifiedName {
 
     public static boolean sharesSourcePacakage(String className, String packageScope) {
         return className.startsWith(packageScope.split("\\.")[0]);
+    }
+
+    public static Path getFQNPart(Path watchDir, Path entry) {
+
+         return entry.subpath(watchDir.getNameCount(), entry.getNameCount());
     }
 
 }

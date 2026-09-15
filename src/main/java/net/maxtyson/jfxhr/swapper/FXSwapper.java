@@ -20,10 +20,10 @@ import static net.maxtyson.jfxhr.loader.ClassLoader.replaceInstance;
 
 public class FXSwapper {
 
-    private final Pane root;
+    private final Parent root;
     private final SourceWatcher watcher;
 
-    public FXSwapper(Pane root, SourceWatcher watcher) {
+    public FXSwapper(Parent root, SourceWatcher watcher) {
         this.root = root;
         this.watcher = watcher;
 
@@ -106,8 +106,15 @@ public class FXSwapper {
         return found;
     }
 
-    public void setInRoot(Node newNode) {
-        Platform.runLater(() -> root.getChildren().setAll(newNode));
+    public void setTheRoot(Node newNode) {
+        Platform.runLater(() -> {
+            try {
+                ObservableList<Node> newChildrenList = (ObservableList<Node>) getChildrenReflectively(root);
+                newChildrenList.setAll(newNode);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     private static List<Node> getChildrenReflectively(Parent parent) throws Exception {
