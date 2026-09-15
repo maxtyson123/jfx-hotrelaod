@@ -4,6 +4,7 @@ import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import net.maxtyson.jfxhr.compiler.CompileResult;
 import net.maxtyson.jfxhr.compiler.DynamicCompiler;
+import net.maxtyson.jfxhr.compiler.FullyQualifiedName;
 import net.maxtyson.jfxhr.loader.ClassLoader;
 import net.maxtyson.jfxhr.swapper.FXSwapper;
 import net.maxtyson.jfxhr.watcher.SourceWatcher;
@@ -49,17 +50,17 @@ public class HotReloader {
     private Class<?> onSourceChanged(Path sourceFile) {
         log.info("Hot reloading file: '{}'", sourceFile);
 
-        // Compile
-        CompileResult compiled = compiler.compile(sourceFile, config.watchDir(), config.binDir());
-        String fqn = ClassLoader.fullQualifiedNameFromFile(sourceFile.subpath(1, sourceFile.getNameCount()));
-
-        // Compilation failed
-        if(!compiled.success()){
-            log.error("Failed to compile '{}' - {}", sourceFile, compiled.diagnostics());
-            return null;
-        }
-
         try {
+
+             // Compile
+            String fqn = FullyQualifiedName.fromFile(sourceFile.subpath(1, sourceFile.getNameCount()));
+            CompileResult compiled = compiler.compile(sourceFile, fqn, config.watchDir(), config.binDir());
+
+            // Compilation failed
+            if(!compiled.success()){
+                log.error("Failed to compile '{}' - {}", sourceFile, compiled.diagnostics());
+                return null;
+            }
 
             // Load into instantiateable object
             Class<?> loadedClass = ClassLoader.load(compiled.outputDir(), fqn);
@@ -69,7 +70,7 @@ public class HotReloader {
 
         } catch (Exception e) {
             e.printStackTrace();
-            log.error("Failed to load '{}' - {}", fqn, e.getMessage());
+            log.error("Failed to load ' {}", e.getMessage());
             return null;
         }
     }

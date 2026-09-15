@@ -1,5 +1,12 @@
 package net.maxtyson.jfxhr.compiler;
 
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.asm.Advice;
+import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.description.type.TypeDescription;
+import net.bytebuddy.dynamic.ClassFileLocator;
+import net.bytebuddy.matcher.ElementMatchers;
+import net.bytebuddy.pool.TypePool;
 import net.maxtyson.jfxhr.HotReloader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,7 +36,7 @@ public class DynamicCompiler {
         }
     }
 
-    public CompileResult compile(Path sourceFile,  Path sourceDir, Path outputDir) {
+    public CompileResult compile(Path sourceFile, String fqn, Path sourceDir, Path outputDir) throws IOException {
 
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
         log.info("Compiling '{}' into '{}'", sourceFile, outputDir);
@@ -56,14 +63,31 @@ public class DynamicCompiler {
 
         // Compile the class
         boolean success = task.call();
+        injectInternalCode(outputDir, fqn);
 
-
-        try{
-            fileManager.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
+        fileManager.close();
         return new CompileResult(success, outputDir, diagnostics.getDiagnostics());
+    }
+
+    private void injectInternalCode(Path outputDir, String fqn) throws IOException {
+
+        // Load the classpath of all the dynamiclly compiled classes
+        ClassFileLocator folderLocator = new ClassFileLocator.ForFolder(outputDir.toFile());
+
+        // Load the rest of the linking that the project uses by default
+        ClassFileLocator classLoaderLocator = ClassFileLocator.ForClassLoader.of(Thread.currentThread().getContextClassLoader());
+
+        // Merge the old classes and hotfixed classes
+        ClassFileLocator compoundLocator = new ClassFileLocator.Compound(folderLocator, classLoaderLocator);
+        TypeDescription type = TypePool.Default.of(compoundLocator).describe(fqn).resolve();
+
+        // Inject bytecode containing metadata needed to help scene injection
+        new ByteBuddy()
+            .redefine(type, compoundLocator)
+            .defineField("__jfxhr_args", Object[].class, Visibility.PUBLIC)
+            .defineField("__jfxhr_args_types", Object[].class, Visibility.PUBLIC)
+            .visit(Advice.to(ConstructorArgsObserver.class).on(ElementMatchers.isConstructor()))
+            .make()
+            .saveIn(outputDir.toFile());
     }
 }

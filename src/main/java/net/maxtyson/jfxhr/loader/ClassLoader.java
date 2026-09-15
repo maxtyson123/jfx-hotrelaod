@@ -9,24 +9,15 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Objects;
+
+import static net.maxtyson.jfxhr.compiler.FullyQualifiedName.sharesSourcePacakage;
+import static net.maxtyson.jfxhr.compiler.ReflectionHelpers.*;
 
 //@credit https://stackoverflow.com/questions/4133709/is-it-possible-in-java-to-create-blank-instance-of-class-without-no-arg-constr
 
 public class ClassLoader {
 
-    public static String fullQualifiedNameFromFile(Path file){
-
-        String fqnPackage = file.getParent().toString().replace("/", ".");
-        String fqnClass = file.getFileName().toString().replace(".java", "");
-
-        return fqnPackage + "." + fqnClass;
-    }
-
-       public static String fullQualifiedNameFromDir(Path dir){
-
-        String fqnPackage = dir.toString().replace("/", ".");
-        return fqnPackage;
-    }
 
     public static Class<?> load(Path compiledOutput, String className) throws Exception {
 
@@ -39,29 +30,45 @@ public class ClassLoader {
         return classLoader.loadClass(className);
     }
 
-     public static boolean sharesTopLevel(String className, String packageScope){
-         return className.startsWith(packageScope.split("\\.")[0]);
+    public static Object replaceInstance(Object oldInstance, Class<?> sourceClass) throws Exception {
+        return replaceInstance(oldInstance, null, sourceClass);
     }
 
-    public static Object replaceInstance(Object oldInstance, Class<?> sourceClass) throws Exception {
+    public static Object replaceInstance(Object oldInstance, Object newInstance, Class<?> sourceClass) throws Exception {
 
-        // Create a new instance of the class
-        Constructor<?> constructoror = sourceClass.getDeclaredConstructors()[0];
-        Object newInstance = constructoror.newInstance(getOldArgs(oldInstance, constructoror.getParameters()));
+        // Target instance is either the one created by parent constructor or freshly instantiated
+        Object targetInstance = newInstance;
+        if (targetInstance == null) {
+
+             // Create a new instance of the class
+            Constructor<?> constructor = getConstructorUsed(oldInstance, null, sourceClass);
+            Object[] args = getArgs(oldInstance, null, constructor);
+            targetInstance = constructor.newInstance(args);
+        }
 
         Class<?> oldClass = oldInstance.getClass();
         Class<?> current = sourceClass;
 
         // Let the instance perform any local preloads
-        if (newInstance instanceof Reloadable)
-            ((Reloadable)newInstance).beforeReload();
+        if (targetInstance instanceof Reloadable)
+            ((Reloadable) targetInstance).beforeReload();
+
+        // Get the that were used to construct the new and old element
+        Object[] oldArgs = internalReadArgsTypes(oldInstance);
+        Object[] newArgs = internalReadArgsTypes(targetInstance);
+
+        boolean argsChanged = oldArgs != null && newArgs != null && !Arrays.equals(oldArgs, newArgs);
 
         // Inject old state into object
-        while (current != null && sharesTopLevel(current.getName(), oldClass.getPackageName())) {
+        while (current != null && sharesSourcePacakage(current.getName(), oldClass.getPackageName())) {
             for (Field newField : current.getDeclaredFields()) {
 
                 // Static stored elsewhere (@todo verify existence of bss in java)
                 if (Modifier.isStatic(newField.getModifiers()))
+                    continue;
+
+                // Skip any internal state
+                if (newField.getName().startsWith("__jfxhr_") || newField.isSynthetic())
                     continue;
 
                 // Make sure new field is same name and type
@@ -73,8 +80,18 @@ public class ClassLoader {
                 oldField.setAccessible(true);
                 newField.setAccessible(true);
 
-                // Populate with old data
-                newField.set(newInstance, oldField.get(oldInstance));
+                Object oldValue = oldField.get(oldInstance);
+                Object newValue = newField.get(targetInstance);
+
+                // If the args were updated then don't copy the old arg over
+                if (argsChanged && isArgValue(oldValue, oldArgs))
+                    continue;
+
+                // Any field that is uninitialised will be set up during construction, so don't copy the old constructed values
+                if (newInstance != null && !isDefaultValue(newValue, newField.getType()) && !Objects.equals(oldValue, newValue))
+                    continue;
+
+                newField.set(targetInstance, oldValue);
             }
 
             // Ensure superclasses are inited aswell
@@ -82,28 +99,30 @@ public class ClassLoader {
         }
 
         // Let the instance perform any local reloads
-        if (newInstance instanceof Reloadable)
-            ((Reloadable)newInstance).afterReload();
+        if (targetInstance instanceof Reloadable)
+            ((Reloadable) targetInstance).afterReload();
 
-        return newInstance;
+        return targetInstance;
     }
 
-    private static Object[] getOldArgs(Object oldInstance, Parameter[] params) throws Exception {
+    private static Constructor<?> getConstructorUsed(Object oldInstance, Object newInstance, Class<?> sourceClass) throws NoSuchFieldException, NoSuchMethodException {
 
+        // The new code may have added/removed args so try get the new constructor first
+        Class<?>[] args = internalReadArgsTypes(newInstance);
+        if (args == null)
+            args = internalReadArgsTypes(oldInstance);
 
-        Object[] args = new Object[params.length];
+        // Args are yet to be attached as meta-data (there
+        if (args == null)
+            return sourceClass.getDeclaredConstructors()[0];
 
-        for (int i = 0; i < params.length; i++) {
+        // Sytax enforces that constructors must not be arbitrary, so it is known that if the types match then it MUST be the same
+        for (Constructor<?> c : sourceClass.getDeclaredConstructors())
+            if (Arrays.equals(c.getParameterTypes(), args))
+                return c;
 
-            // Get the stored old arg
-            Field f = oldInstance.getClass().getDeclaredField(params[i].getName());
-            f.setAccessible(true);
-
-            // Copy the old arg
-            args[i] = f.get(oldInstance);
-        }
-
-        return args;
+        // Neither the old constructor nor the new one exists
+        throw new NoSuchMethodException("No constructor on " + sourceClass.getName() + " matches previously used signature " + Arrays.toString(args));
     }
 
 }

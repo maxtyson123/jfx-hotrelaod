@@ -12,8 +12,10 @@ import net.maxtyson.jfxhr.watcher.SourceWatcher;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import static net.maxtyson.jfxhr.compiler.ReflectionHelpers.internalReadArgs;
 import static net.maxtyson.jfxhr.loader.ClassLoader.replaceInstance;
 
 public class FXSwapper {
@@ -65,9 +67,9 @@ public class FXSwapper {
             if(!watcher.getWatchedClasses().contains(newChild.getClass().getPackageName()))
                 continue;
 
-             // Create a new clone of the old child to add to the new parent
-             Object merged = replaceInstance(oldChild, newChild.getClass());
-             newChildren.set(i, (Node)merged);
+            // Create a new clone of the old child to add to the new parent
+            Object merged = replaceInstance(oldChild, newChild, newChild.getClass());
+            newChildren.set(i, (Node)merged);
 
              // Ensure subchildren are also copied onto the new node
             moveChildren(oldChild, (Node)merged);

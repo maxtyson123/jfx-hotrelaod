@@ -8,7 +8,7 @@ import net.maxtyson.jfxhr.Reloadable;
 public class IconButton extends StackPane implements Reloadable {
         private int clicks = 0;
         private final Label label = new Label();
-private String name;
+        private String name;
 
     public IconButton(String name) {
         this.name = name;
@@ -18,7 +18,7 @@ private String name;
     }
 
     private void updateLabel(String name) {
-        label.setText(name + ": " + clicks);
+        label.setText(name + " - " + clicks);
         getChildren().setAll(label);
     }
 

@@ -2,6 +2,7 @@ package net.maxtyson.jfxhr.watcher;
 
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
+import net.maxtyson.jfxhr.compiler.FullyQualifiedName;
 import net.maxtyson.jfxhr.loader.ClassLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -62,7 +63,7 @@ public class SourceWatcher {
 
                 // If it's not the start (src) dir then it counts as a package name
                 if(!dir.toString().equals(start.toString()))
-                    watchedClasses.add(ClassLoader.fullQualifiedNameFromDir(dir.subpath(1, dir.getNameCount())));
+                    watchedClasses.add(FullyQualifiedName.fromDirectory(dir.subpath(1, dir.getNameCount())));
 
                 return FileVisitResult.CONTINUE;
             }
