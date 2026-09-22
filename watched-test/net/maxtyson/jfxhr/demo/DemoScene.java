@@ -7,6 +7,6 @@ import net.maxtyson.jfxhr.demo.ToolBar;
 
 public class DemoScene extends VBox {
     public DemoScene() {
-        getChildren().addAll(new Label("version 37"), new ToolBar());
+        getChildren().addAll(new Label("version 40"), new ToolBar());
     }
 }

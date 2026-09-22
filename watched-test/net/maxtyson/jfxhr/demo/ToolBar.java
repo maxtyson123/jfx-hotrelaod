@@ -9,7 +9,7 @@ public class ToolBar extends HBox {
         getChildren().addAll(
             new IconButton("A"),
             new IconButton("B"),
-            new IconButton("v22")
+            new IconButton("v23")
         );
     }
 }
