@@ -1,8 +1,8 @@
-package net.maxtyson.jfxhr.demo;
+package net.maxtyson.reactfx.demo;
 
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
-import net.maxtyson.jfxhr.demo.ToolBar;
+import net.maxtyson.reactfx.demo.ToolBar;
 
 
 public class DemoScene extends VBox {

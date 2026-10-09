@@ -1,7 +1,6 @@
-package net.maxtyson.jfxhr.loader;
+package net.maxtyson.reactfx.loader;
 
-import net.maxtyson.jfxhr.Reloadable;
-import sun.reflect.ReflectionFactory;
+import net.maxtyson.reactfx.Reloadable;
 
 import java.io.File;
 import java.lang.reflect.*;
@@ -11,8 +10,8 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Objects;
 
-import static net.maxtyson.jfxhr.compiler.FullyQualifiedName.sharesSourcePacakage;
-import static net.maxtyson.jfxhr.compiler.ReflectionHelpers.*;
+import static net.maxtyson.reactfx.compiler.FullyQualifiedName.sharesSourcePacakage;
+import static net.maxtyson.reactfx.compiler.ReflectionHelpers.*;
 
 //@credit https://stackoverflow.com/questions/4133709/is-it-possible-in-java-to-create-blank-instance-of-class-without-no-arg-constr
 

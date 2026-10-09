@@ -1,7 +1,7 @@
-package net.maxtyson.jfxhr.demo;
+package net.maxtyson.reactfx.demo;
 
 import javafx.scene.layout.HBox;
-import net.maxtyson.jfxhr.demo.IconButton;
+import net.maxtyson.reactfx.demo.IconButton;
 
 public class ToolBar extends HBox {
     public ToolBar() {

@@ -1,9 +1,8 @@
-package net.maxtyson.jfxhr.watcher;
+package net.maxtyson.reactfx.watcher;
 
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
-import net.maxtyson.jfxhr.compiler.FullyQualifiedName;
-import net.maxtyson.jfxhr.loader.ClassLoader;
+import net.maxtyson.reactfx.compiler.FullyQualifiedName;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -14,13 +13,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 import static java.nio.file.StandardWatchEventKinds.*;
-import static net.maxtyson.jfxhr.compiler.FullyQualifiedName.getFQNPart;
+import static net.maxtyson.reactfx.compiler.FullyQualifiedName.getFQNPart;
 
 public class SourceWatcher {
 

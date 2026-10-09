@@ -1,4 +1,4 @@
-package net.maxtyson.jfxhr.compiler;
+package net.maxtyson.reactfx.compiler;
 
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.asm.Advice;
@@ -7,7 +7,6 @@ import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.ClassFileLocator;
 import net.bytebuddy.matcher.ElementMatchers;
 import net.bytebuddy.pool.TypePool;
-import net.maxtyson.jfxhr.HotReloader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

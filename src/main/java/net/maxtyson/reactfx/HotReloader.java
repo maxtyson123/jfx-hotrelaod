@@ -1,22 +1,19 @@
-package net.maxtyson.jfxhr;
+package net.maxtyson.reactfx;
 
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import javafx.scene.layout.Pane;
-import net.maxtyson.jfxhr.compiler.CompileResult;
-import net.maxtyson.jfxhr.compiler.DynamicCompiler;
-import net.maxtyson.jfxhr.compiler.FullyQualifiedName;
-import net.maxtyson.jfxhr.loader.ClassLoader;
-import net.maxtyson.jfxhr.swapper.FXSwapper;
-import net.maxtyson.jfxhr.watcher.SourceWatcher;
+import net.maxtyson.reactfx.compiler.CompileResult;
+import net.maxtyson.reactfx.compiler.DynamicCompiler;
+import net.maxtyson.reactfx.compiler.FullyQualifiedName;
+import net.maxtyson.reactfx.loader.ClassLoader;
+import net.maxtyson.reactfx.swapper.FXSwapper;
+import net.maxtyson.reactfx.watcher.SourceWatcher;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
-import java.util.List;
 
-import static net.maxtyson.jfxhr.compiler.FullyQualifiedName.getFQNPart;
+import static net.maxtyson.reactfx.compiler.FullyQualifiedName.getFQNPart;
 
 public class HotReloader {
 

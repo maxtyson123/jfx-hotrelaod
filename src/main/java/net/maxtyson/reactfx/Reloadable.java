@@ -1,4 +1,4 @@
-package net.maxtyson.jfxhr;
+package net.maxtyson.reactfx;
 
 public interface Reloadable {
     default void beforeReload() {}

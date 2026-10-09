@@ -1,9 +1,9 @@
-package net.maxtyson.jfxhr.demo;
+package net.maxtyson.reactfx.demo;
 
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.geometry.Insets;
-import net.maxtyson.jfxhr.Reloadable;
+import net.maxtyson.reactfx.Reloadable;
 
 public class IconButton extends StackPane implements Reloadable {
         private int clicks = 0;

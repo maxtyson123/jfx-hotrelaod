@@ -1,4 +1,4 @@
-package net.maxtyson.jfxhr.compiler;
+package net.maxtyson.reactfx.compiler;
 
 import net.bytebuddy.asm.Advice;
 

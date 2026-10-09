@@ -1,4 +1,4 @@
-package net.maxtyson.jfxhr.compiler;
+package net.maxtyson.reactfx.compiler;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

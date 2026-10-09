@@ -1,11 +1,11 @@
-package net.maxtyson.jfxhr.demo;
+package net.maxtyson.reactfx.demo;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import net.maxtyson.jfxhr.HotReloader;
-import net.maxtyson.jfxhr.ReloaderConfig;
+import net.maxtyson.reactfx.HotReloader;
+import net.maxtyson.reactfx.ReloaderConfig;
 
 import java.nio.file.Path;
 
