@@ -2,6 +2,7 @@ package net.maxtyson.reactfx.hotreload;
 
 import javafx.scene.Node;
 import javafx.scene.Parent;
+import net.maxtyson.reactfx.core.Threads;
 import net.maxtyson.reactfx.hotreload.compiler.CompileResult;
 import net.maxtyson.reactfx.hotreload.compiler.DynamicCompiler;
 import net.maxtyson.reactfx.hotreload.compiler.FullyQualifiedName;
@@ -64,7 +65,13 @@ public class HotReloader {
 
             // Load into instantiateable object
             Class<?> loadedClass = SourceLoader.load(compiled.outputDir(), fqn);
-            swapper.swapAll(fqn, loadedClass);
+            Threads.runOnFX(() -> {
+                try {
+                    swapper.swapAll(fqn, loadedClass);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }, true);
 
             return loadedClass;
 
