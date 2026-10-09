@@ -16,7 +16,7 @@ public class App extends Application {
 
         ReloaderConfig config = new ReloaderConfig(
             stage,
-            Path.of("watched-test"),
+            Path.of("watched"),
             Path.of("target/classes-jfxhr")
         );
 
@@ -25,7 +25,7 @@ public class App extends Application {
         stage.show();
 
         HotReloader reloader = HotReloader.attach(config, root);
-        reloader.loadDemo();
+        reloader.mountRoot("net.maxtyson.reactfx.demo.DemoScene");
     }
 
     public static void main(String[] args) {

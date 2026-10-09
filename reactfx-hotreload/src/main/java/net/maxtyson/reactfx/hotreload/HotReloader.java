@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import java.nio.file.Path;
 
 import static net.maxtyson.reactfx.hotreload.compiler.FullyQualifiedName.getFQNPart;
+import static net.maxtyson.reactfx.hotreload.compiler.FullyQualifiedName.toDirectory;
 
 public class HotReloader {
 
@@ -71,9 +72,9 @@ public class HotReloader {
         }
     }
 
-    public void loadDemo() {
+    public void mountRoot(String fqn) {
 
-        Class<?> rootClass = onSourceChanged(Path.of("watched-test/net/maxtyson/jfxhr/demo/DemoScene.java"));
+        Class<?> rootClass = onSourceChanged(toDirectory(config.watchDir(), fqn));
 
         try{
             swapper.setTheRoot((Node)rootClass.getDeclaredConstructor().newInstance());

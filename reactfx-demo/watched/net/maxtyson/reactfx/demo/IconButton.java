@@ -3,7 +3,7 @@ package net.maxtyson.reactfx.demo;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.geometry.Insets;
-import net.maxtyson.reactfx.Reloadable;
+import net.maxtyson.reactfx.core.Reloadable;
 
 public class IconButton extends StackPane implements Reloadable {
         private int clicks = 0;

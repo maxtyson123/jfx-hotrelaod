@@ -2,6 +2,7 @@ package net.maxtyson.reactfx.hotreload.compiler;
 
 import java.nio.file.Path;
 
+//@todo: breaks on windows with '/'
 public class FullyQualifiedName {
 
      public static String fromFile(Path file) {
@@ -18,6 +19,11 @@ public class FullyQualifiedName {
         String fqnPackage = dir.toString().replace("/", ".");
         return fqnPackage;
     }
+
+     public static Path toDirectory(Path root, String fqn) {
+        return root.resolve(fqn.replace(".", "/") + ".java");
+    }
+
 
     public static boolean sharesSourcePacakage(String className, String packageScope) {
         return className.startsWith(packageScope.split("\\.")[0]);
