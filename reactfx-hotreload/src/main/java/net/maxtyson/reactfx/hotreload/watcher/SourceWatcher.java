@@ -20,6 +20,9 @@ import java.util.function.Consumer;
 import static java.nio.file.StandardWatchEventKinds.*;
 import static net.maxtyson.reactfx.hotreload.compiler.FullyQualifiedName.getFQNPart;
 
+/**
+ * Listens to events on a directory and triggers a callback when a file is changed
+ */
 public class SourceWatcher {
 
 

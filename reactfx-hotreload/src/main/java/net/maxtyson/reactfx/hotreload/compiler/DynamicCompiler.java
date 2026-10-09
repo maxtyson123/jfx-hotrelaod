@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Compiler that turns watched java classes into bytecode
+ */
 public class DynamicCompiler {
 
     /// DynamicCompiler specific logger

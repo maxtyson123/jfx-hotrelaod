@@ -14,6 +14,9 @@ import java.util.List;
 
 import static net.maxtyson.reactfx.hotreload.loader.SourceLoader.replaceInstance;
 
+/**
+ * Handles updating the scene graph with a new FX node
+ */
 public class FXSwapper {
 
     private final Parent root;

@@ -2,7 +2,11 @@ package net.maxtyson.reactfx.hotreload.compiler;
 
 import java.nio.file.Path;
 
-//@todo: breaks on windows with '/'
+/**
+ * Helper class for manipulating a fully qualified name (fqn)
+ *
+ * @todo: breaks on windows with '/'
+ */
 public class FullyQualifiedName {
 
      public static String fromFile(Path file) {

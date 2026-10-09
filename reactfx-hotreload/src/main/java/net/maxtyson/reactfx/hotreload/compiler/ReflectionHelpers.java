@@ -5,6 +5,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Parameter;
 import java.util.Objects;
 
+/**
+ * Helper class for performing reflection on classes
+ */
 public class ReflectionHelpers {
 
 

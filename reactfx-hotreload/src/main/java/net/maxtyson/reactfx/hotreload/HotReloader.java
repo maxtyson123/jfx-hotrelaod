@@ -16,6 +16,9 @@ import java.nio.file.Path;
 import static net.maxtyson.reactfx.hotreload.compiler.FullyQualifiedName.getFQNPart;
 import static net.maxtyson.reactfx.hotreload.compiler.FullyQualifiedName.toDirectory;
 
+/**
+ * Handles watching a given directory and hot swapping new classes into the running application
+ */
 public class HotReloader {
 
 

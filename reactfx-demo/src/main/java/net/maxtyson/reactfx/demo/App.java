@@ -1,4 +1,4 @@
-package net.maxtyson.reactfx.core.demo;
+package net.maxtyson.reactfx.demo;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -9,6 +9,9 @@ import net.maxtyson.reactfx.hotreload.ReloaderConfig;
 
 import java.nio.file.Path;
 
+/**
+ * JavaFX entry for the demo app
+ */
 public class App extends Application {
 
     @Override

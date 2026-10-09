@@ -5,6 +5,9 @@ import net.bytebuddy.asm.Advice;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 
+/**
+ * Bytecode injector for storing constructor args
+ */
 public class ConstructorArgsObserver {
 
     @Advice.OnMethodExit

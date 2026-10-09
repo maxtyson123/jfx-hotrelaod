@@ -13,8 +13,11 @@ import java.util.Objects;
 import static net.maxtyson.reactfx.hotreload.compiler.FullyQualifiedName.sharesSourcePacakage;
 import static net.maxtyson.reactfx.hotreload.compiler.ReflectionHelpers.*;
 
-//@credit https://stackoverflow.com/questions/4133709/is-it-possible-in-java-to-create-blank-instance-of-class-without-no-arg-constr
-
+/**
+ * Handles loading javabyte code and replacing a class instance with a new one
+ *
+ * @credit https://stackoverflow.com/questions/4133709/is-it-possible-in-java-to-create-blank-instance-of-class-without-no-arg-constr
+ */
 public class SourceLoader {
 
 
