@@ -2,7 +2,7 @@ package net.maxtyson.reactfx.hotreload;
 
 import javafx.scene.Node;
 import javafx.scene.Parent;
-import net.maxtyson.reactfx.core.Threads;
+import net.maxtyson.reactfx.core.threading.Threads;
 import net.maxtyson.reactfx.hotreload.compiler.CompileResult;
 import net.maxtyson.reactfx.hotreload.compiler.DynamicCompiler;
 import net.maxtyson.reactfx.hotreload.compiler.FullyQualifiedName;

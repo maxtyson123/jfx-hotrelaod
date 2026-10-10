@@ -5,7 +5,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.layout.Pane;
-import net.maxtyson.reactfx.core.Reloadable;
+import net.maxtyson.reactfx.core.reload.Reloadable;
 import net.maxtyson.reactfx.hotreload.watcher.SourceWatcher;
 
 import java.lang.reflect.Method;

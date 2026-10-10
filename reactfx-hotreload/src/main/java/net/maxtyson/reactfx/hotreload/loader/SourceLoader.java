@@ -1,6 +1,6 @@
 package net.maxtyson.reactfx.hotreload.loader;
 
-import net.maxtyson.reactfx.core.Reloadable;
+import net.maxtyson.reactfx.core.reload.Reloadable;
 
 import java.io.File;
 import java.lang.reflect.*;

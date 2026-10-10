@@ -1,4 +1,4 @@
-package net.maxtyson.reactfx.core;
+package net.maxtyson.reactfx.core.reload;
 
 /**
  * An element that can be reloaded and receive reload events

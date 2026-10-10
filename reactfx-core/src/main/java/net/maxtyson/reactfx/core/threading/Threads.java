@@ -1,4 +1,4 @@
-package net.maxtyson.reactfx.core;
+package net.maxtyson.reactfx.core.threading;
 
 import javafx.application.Platform;
 
