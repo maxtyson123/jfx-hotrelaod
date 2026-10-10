@@ -1,7 +1,9 @@
 package net.maxtyson.reactfx.core.state.dependant;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Handles a list of dependencies on a state
@@ -9,7 +11,7 @@ import java.util.List;
 public class Subscribers {
 
     /// The list of functions dependent on this state
-    private List<StateDependantFunction> dependants = new ArrayList<>();
+    private Set<StateDependantFunction> dependants = new LinkedHashSet<>();
 
     /**
      * Register an ew dependency
@@ -36,7 +38,8 @@ public class Subscribers {
      */
     public void notifyDirty(){
 
-        for(StateDependantFunction dependantFunction : dependants)
+        Set<StateDependantFunction> dirtyCopy = dependants;
+        for(StateDependantFunction dependantFunction : dirtyCopy)
             dependantFunction.makeDirty();
 
     }

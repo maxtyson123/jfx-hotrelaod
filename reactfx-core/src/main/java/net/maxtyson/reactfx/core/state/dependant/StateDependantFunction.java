@@ -47,7 +47,7 @@ public abstract class StateDependantFunction {
      * @param function The function to run
      */
     public void run(Runnable function){
-        handleRun(function, false);
+        handleRun(function, true);
     }
 
 

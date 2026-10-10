@@ -47,6 +47,10 @@ public class Memo<T> extends State<T> {
      */
     @Override
     public T get() {
+
+        // Store that this just became a dependacny
+        subscribers.track();
+
         return run(true);
     }
 
@@ -75,8 +79,11 @@ public class Memo<T> extends State<T> {
             value = tracked ? runner.run(function) : runner.runUntracked(function);
         } finally {
             running = false;
-            dirty = false;
         }
+
+         // Untracked cant mark as not dirty as doesn't track dependency
+        if(tracked)
+            dirty = false;
 
         return value;
 
