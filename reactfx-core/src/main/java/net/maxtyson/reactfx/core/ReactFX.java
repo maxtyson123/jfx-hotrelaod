@@ -1,13 +1,14 @@
 package net.maxtyson.reactfx.core;
 
 import net.maxtyson.reactfx.core.scope.Scope;
+import net.maxtyson.reactfx.core.state.State;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import static net.maxtyson.reactfx.core.scope.Scope.getCurrentScope;
 
 /**
- * Facade to abastract API
+ * Facade to abstract API
  */
 public class ReactFX {
 
@@ -31,5 +32,16 @@ public class ReactFX {
         }
 
         currentScope.registerCleanUpCallback(function);
+    }
+
+    /**
+     * Create a new state tracked variable
+     *
+     * @param value The value of the variable
+     * @return The new state
+     * @param <T> The type of the variable
+     */
+    public static <T> State<T> useState(T value){
+        return State.of(value);
     }
 }

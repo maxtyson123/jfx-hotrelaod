@@ -140,7 +140,7 @@ public class Scope {
     }
 
     /**
-     * Register a new clean up handler to run within this scope
+     * Register a new clean-up handler to run within this scope
      *
      * @param function The handler to run on disposal
      */
