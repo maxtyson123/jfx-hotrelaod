@@ -15,7 +15,7 @@ public class Scope {
     private static final Logger log = LogManager.getLogger(Scope.class);
 
     /// A list of handlers to run when this state is disposed
-    private Deque<Runnable> cleanUpCallbacks = new ArrayDeque<>();
+    private Stack<Runnable> cleanUpCallbacks = new Stack<>();
 
     /// A list of sub-scopes that was created in this scope
     private List<Scope> children = new ArrayList<>();
