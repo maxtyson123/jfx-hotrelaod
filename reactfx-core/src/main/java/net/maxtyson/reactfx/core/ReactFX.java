@@ -1,9 +1,12 @@
 package net.maxtyson.reactfx.core;
 
 import net.maxtyson.reactfx.core.scope.Scope;
+import net.maxtyson.reactfx.core.state.Memo;
 import net.maxtyson.reactfx.core.state.State;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.function.Supplier;
 
 import static net.maxtyson.reactfx.core.scope.Scope.getCurrentScope;
 
@@ -43,5 +46,16 @@ public class ReactFX {
      */
     public static <T> State<T> useState(T value){
         return State.of(value);
+    }
+
+    /**
+     * Creat a new state tracked function
+     *
+     * @param function The function to run
+     * @return The new state
+     * @param <T> The type of the variable
+     */
+    public static <T> Memo<T> useMemo(Supplier<T> function){
+        return new Memo<>(function);
     }
 }

@@ -1,14 +1,12 @@
 package net.maxtyson.reactfx.core.state;
 
 import javafx.beans.value.ObservableValueBase;
-import net.maxtyson.reactfx.core.ReactFX;
-import net.maxtyson.reactfx.core.threading.Threads;
+import net.maxtyson.reactfx.core.state.dependant.Subscribers;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.function.UnaryOperator;
 
 import static net.maxtyson.reactfx.core.threading.Threads.isOnFX;
 import static net.maxtyson.reactfx.core.threading.Threads.runOnFX;
@@ -24,7 +22,10 @@ public class State<T> extends ObservableValueBase<T> {
     private static final Logger log = LogManager.getLogger(State.class);
 
     /// The current value of the variable this state holds
-    volatile T value;
+    protected volatile T value;
+
+    /// The list of consumers of this value
+    protected Subscribers subscribers = new Subscribers();
 
     /**
      * Setup a new state
@@ -41,6 +42,7 @@ public class State<T> extends ObservableValueBase<T> {
      * @return The value
      */
     public T get() {
+        subscribers.track();
         return value;
     }
 
@@ -82,6 +84,7 @@ public class State<T> extends ObservableValueBase<T> {
 
         // Rerender with new values
         value = newValue;
+        subscribers.notifyDirty();
         fireValueChangedEvent();
     }
 
@@ -114,5 +117,13 @@ public class State<T> extends ObservableValueBase<T> {
      */
     public static <T> State<T> of(T value){
         return new State<T>(value);
+    }
+
+    public Subscribers getSubscribers() {
+        return subscribers;
+    }
+
+    public void setSubscribers(Subscribers subscribers) {
+        this.subscribers = subscribers;
     }
 }
