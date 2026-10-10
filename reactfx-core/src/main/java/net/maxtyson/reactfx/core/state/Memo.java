@@ -1,8 +1,12 @@
 package net.maxtyson.reactfx.core.state;
 
+import net.maxtyson.reactfx.core.scope.Scope;
 import net.maxtyson.reactfx.core.state.dependant.StateDependantFunction;
 import net.maxtyson.reactfx.core.state.dependant.Subscribers;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.util.Deque;
 import java.util.function.Supplier;
 
 /**
@@ -12,6 +16,8 @@ import java.util.function.Supplier;
  */
 public class Memo<T> extends State<T> {
 
+    private static final Logger log = LogManager.getLogger(Memo.class);
+
     /// Whether the memo function is in the middle of running
     private boolean running = false;
 
@@ -20,6 +26,9 @@ public class Memo<T> extends State<T> {
 
     /// The function to calculate the memo value
     private Supplier<T> function;
+
+    /// Whether the scope this effect was in has been cleaned up
+    private boolean disposed = false;
 
     /// The runner to track dependencies as the memo is calculated
     private StateDependantFunction runner = new StateDependantFunction() {
@@ -38,6 +47,15 @@ public class Memo<T> extends State<T> {
         super(null);
 
         this.function = function;
+
+        // Delete this memo when it goes out of scope
+        Scope current = Scope.getCurrentScope();
+        if(current == null){
+            log.warn("Memo made out side of scope, will leak resources with no clean up");
+            return;
+        }
+
+        current.registerCleanUpCallback(() -> dispose());
     }
 
     /**
@@ -48,7 +66,10 @@ public class Memo<T> extends State<T> {
     @Override
     public T get() {
 
-        // Store that this just became a dependacny
+        if(disposed)
+            throw new IllegalStateException("Cannot get from a disposed memo");
+
+        // Store that the caller just became a dependacny
         subscribers.track();
 
         return run(true);
@@ -61,6 +82,10 @@ public class Memo<T> extends State<T> {
      */
     @Override
     public T peek() {
+
+        if(disposed)
+            throw new IllegalStateException("Cannot peek at a disposed memo");
+
         return run(false);
     }
 
@@ -92,7 +117,7 @@ public class Memo<T> extends State<T> {
     public void markDirty(){
 
         // Nothing to do
-        if(dirty)
+        if(dirty || disposed)
             return;
 
         dirty = true;
@@ -104,5 +129,14 @@ public class Memo<T> extends State<T> {
     @Override
     public void set(T newValue) {
         throw new UnsupportedOperationException("Cannot call set() on a memo");
+    }
+
+    public void dispose(){
+
+        disposed = true;
+
+        // Remove state listenter
+        runner.clean();
+
     }
 }

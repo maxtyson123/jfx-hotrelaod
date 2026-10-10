@@ -33,6 +33,15 @@ public class Effect extends StateDependantFunction {
         this.name = name;
         this.function = function;
 
+        // Delete this effect when it goes out of scope
+        Scope current = Scope.getCurrentScope();
+        if(current == null){
+            log.warn("Effect made out side of scope, will leak resources with no clean up");
+            return;
+        }
+
+        current.registerCleanUpCallback(() -> dispose());
+
         //  Discover deps
         try{
             scope.run(() -> run(function));
