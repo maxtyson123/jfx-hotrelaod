@@ -1,6 +1,7 @@
 package net.maxtyson.reactfx.core;
 
 import net.maxtyson.reactfx.core.scope.Scope;
+import net.maxtyson.reactfx.core.state.Effect;
 import net.maxtyson.reactfx.core.state.Memo;
 import net.maxtyson.reactfx.core.state.State;
 import org.apache.logging.log4j.LogManager;
@@ -49,13 +50,25 @@ public class ReactFX {
     }
 
     /**
-     * Creat a new state tracked function
+     * Creat a new state dependant calculation
      *
-     * @param function The function to run
+     * @param function The function to run to calculate the value
      * @return The new state
      * @param <T> The type of the variable
      */
     public static <T> Memo<T> useMemo(Supplier<T> function){
         return new Memo<>(function);
     }
+
+
+    /**
+     * Creat a new state dependant function
+     *
+     * @param function The function to run when state changes
+     * @return The new state
+     */
+    public static Effect useEffect(String name, Runnable function){
+        return new Effect(name, function);
+    }
+
 }

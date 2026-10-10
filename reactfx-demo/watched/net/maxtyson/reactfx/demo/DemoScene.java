@@ -11,6 +11,7 @@ import net.maxtyson.reactfx.demo.UI;
 import net.maxtyson.reactfx.core.threading.Threads;
 import net.maxtyson.reactfx.core.scope.Scope;
 import net.maxtyson.reactfx.core.state.State;
+import net.maxtyson.reactfx.core.state.Effect;
 import net.maxtyson.reactfx.core.state.State;
 
 import static net.maxtyson.reactfx.core.ReactFX.*;
@@ -22,29 +23,50 @@ public class DemoScene extends VBox {
 
         Log log = new Log();
 
-        State<Integer> a = useState(1);
-        State<Integer> b = useState(2);
-        Label aLabel = new Label();
-        aLabel.textProperty().bind(a.map(x -> "a = " + x));
-        Label bLabel = new Label();
-        bLabel.textProperty().bind(b.map(x -> "b = " + x));
+        State<Integer> count = useState(0);
+        State<Integer> other = useState(0);
+        State<Integer> doubled = useMemo(() -> count.get() * 2);
 
-        int[] sumRuns = {0};
-        State<Integer> sum = useMemo(() -> {
-            sumRuns[0]++;
-            return a.get() + b.get();
+        useEffect("first", () -> log.log("useEffect[first] count=" + count.get() + " doubled=" + doubled.get()));
+        useEffect("second", () -> log.log("useEffect[second] count=" + count.get()));
+        useEffect("both", () -> log.log("useEffect[both] count=" + count.get() + " other=" + other.get()));
+        useEffect("cleanup", () -> {
+            int c = count.get();
+            onCleanup(() -> log.log(" cleanup for c=" + c));
+            log.log("useEffect[cleanup] body c=" + c);
         });
 
-        Node inputsRow = UI.row(aLabel, bLabel);
-        Node inputsBtnRow = UI.row(
-            UI.button("a + 1", () -> a.update(x -> x + 1)),
-            UI.button("b + 1", () -> b.update(x -> x + 1))
+        Effect[] manual = {null};
+
+        Node driveRow = UI.row(
+            UI.button("count + 1", () -> count.update(c -> c + 1)),
+            UI.button("other + 1", () -> other.update(c -> c + 1)),
+            UI.button("count AND other in one click", () -> {
+                count.update(c -> c + 1);
+                other.update(c -> c + 1);
+            })
         );
-        Node sectionInputs = UI.section("Inputs", inputsRow, inputsBtnRow);
+        Node sectionDrive = UI.section("Drive them", driveRow);
 
-        Node sumBtn = UI.button("read sum", () -> log.log("sum = " + sum.get() + "   ran " + sumRuns[0] + "x"));
-        Node sectionSum = UI.section("lazy + cached", sumBtn);
+        Node disposeRow = UI.row(
+            UI.button("create manual useEffect", () -> {
+                if (manual[0] != null) return;
+                manual[0] = useEffect("manual", () -> log.log("useEffect[manual] count=" + count.get()));
+            }),
+            UI.button("dispose manual useEffect", () -> {
+                if (manual[0] != null) {
+                    manual[0].dispose();
+                    manual[0] = null;
+                    log.log("manual disposed");
+                }
+            })
+        );
+        Node sectionDispose = UI.section("Dispose", disposeRow);
 
-        getChildren().addAll(sectionInputs, sectionSum, log);
+        getChildren().addAll(
+            sectionDrive,
+            sectionDispose,
+            log
+        );
     }
 }
